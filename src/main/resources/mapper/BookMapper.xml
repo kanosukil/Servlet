@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--接口类和映射文件的关系:使用namespace指明对应接口类(namespace的值为包的全路径)-->
+<mapper namespace="experiment.seven.dao.BookDao">
+<!--id:接口中的方法名(函数名)一致[将子元素中的语句对应接口中的方法]
+    parameterType:参数类型[可选]
+    resultType:返回值的全类名或别名(若为集合,则为集合包含的数据类型)-->
+    <select id="getBookByCategoryId" parameterType="String"
+            resultType="experiment.seven.vo.Book">
+        select * from book where category_id=#{category_id};
+    </select>
+<!--    # #{} 表示一位占位符;#{id}表示接收参数的名称为id-->
+<!--    # #{} ${} 占位符-->
+<!--    # #{} 表示传入的数据将当作为一个字符串(自动为自动传入的数据加一个双引号)-->
+<!--    # ${} 表示将传入的数据直接显示在SQL中-->
+    <select id="findAll" resultType="experiment.seven.vo.Book">
+        select * from book;
+    </select>
+<!--插入的表中有自增字段则需要设置useGeneratedKeys="true" 再将主键属性设置为该字段keyProperty="主键"-->
+    <insert id="add" useGeneratedKeys="true" keyProperty="id"
+            parameterType="experiment.seven.vo.Book">
+        insert into Book (name, author, price, image, description, category_id)
+                    values (#{name}, #{author}, #{price}, #{image}, #{description}, #{category_id});
+    </insert>
+    <update id="update" parameterType="experiment.seven.vo.Book">
+        update book set name=#{name}, author=#{author}, price=#{price}, image=#{image},
+                        description=#{description}, category_id=#{category_id}
+        where id=#{id};
+    </update>
+    <delete id="delete" parameterType="Integer">
+        delete from book where id = #{id};
+    </delete>
+</mapper>
+<!-- 
+    XML映射器
+        顶级元素(被定义的顺序排列)
+            cache: 该命名空间的缓存配置
+            cache-ref: 引用其他命名空间的缓存配置
+            resultMap: 描述如何从数据库结果集中加载对象(最复杂但最强大)
+            sql: 可被其他语句引用的可重用语句块
+            insert: 映射插入语句
+            update: 映射更新语句
+            delete: 映射删除语句
+            select: 映射查询语句
+    
+    select:
+        属性:
+            id  唯一标识符
+            parameterType 传入参数的类全限定名或别名(可选)
+            resultType 返回结果的期望的类全限定名或别名(结果为集合则为集合包含的类型)
+            resultMap 对外部resultMap的命名引用(resultMap和resultType两者之间只能存在一个)
+            flushCache 设置为true 只要语句被调用就会导致本地缓存和二级缓存被清空(默认:false)
+            useCache 设置为true 将会把语句结果被二级缓存缓存起来(默认:select为true)
+            timeout 抛出异常前,驱动等待返回结果的秒数(默认:unset)(依据数据库驱动)
+            fetchSize 给驱动的建议值(驱动每次批量返回结果的行数等于该值)(默认:unset)(依赖数据库驱动)
+            statementType 可选:STATEMENT(Statement) PREPARED(PreparedStatement) CALLABLE(CallableStatement) (默认:PREPARED)
+            resultType 可选:FORWARD_ONLY SCROOL_SENSITIVE SCROLL_INSENSITIVE DEFAULT(==unset)(默认:unset)(依赖数据库驱动)
+            databaseId 若配置了数据库厂商标识,MyBatis会加载所有不带databaseId或匹配当前databaseId的语句(同一个语句不带和带的都有,忽略不带的)
+            resultOrdered 仅针对嵌套结果select语句(true:将会假设包含了嵌套结果集或是分组，当返回一个主结果行时，就不会产生对前面结果集的引用。 这就使得在获取嵌套结果集的时候不至于内存不够用。)(默认:false)
+            resultSets 仅使用多结果集的情况(列出执行后的返回结果集并赋予每一个结果集一个名称 ','分隔)
+        <select `properties`="value">
+            SQL select 语句
+        </select>
+
+    update delete insert:
+        属性:
+            id
+            parameterType
+            flushCache 设置为true 只要语句被调用就会导致本地缓存和二级缓存被清空(默认:true)
+            timeout
+            statementType
+            useGeneratedKeys: 仅适用insert update 使数据库的主键自增(默认:false)
+            keyProperty: 仅适用insert update 指定能够唯一识别对象的属性(可用主键直接套用)(默认:unset)
+            keyColumn: 仅适用insert update 设置生成键值在表中的列名(主键不是第一列时,必须设置)
+            databaseId 
+                <keyProperty keyColumn两者可以设置多个属性名称(使用 ',' 分隔)>
+
+                selectKey元素(可穿插到insert元素体内使用)
+                    属性:
+                        keyProperty: 语句结果应该被设置到的目标属性(生成列不止一个,可用','分隔)
+                        keyColumn: 返回结果集中生成列属性的列名(不止一个用','分隔)
+                        resultType: 结果的类型
+                        order: 可设置为 BEFORE AFTER (BEFORE:首先生成主键,设置keyProperty再执行插入语句.AFTER相反.插入语句<主元素>内部可能有嵌入索引的调用)
+                        statementType
+                    <selectKey `properties`='value'>
+                        SQL select 语句
+                    </selectKey>
+
+    sql:
+        定义可重用的SQL代码段(参数在加载时可静态的确定下来)(在不同的include元素中)
+            <sql id="userColumns">
+                ${alias}.id, ${alias}.username, ${alias}.password
+            </sql>
+
+            <select id="selectUsers" resultType="map">
+                select 
+                    <include refid="userColumns"><property name="alias" value="t1"/></include>,
+                    <include refid="userColumns"><property name="alias" value="t2"/></include>
+                from tabel t1
+                    cross join table t2
+            </select>
+
+        上面的代码意思是:从表一和表二的连接中查询两表的id username password
+    
+    缓存:
+        启用二级缓存:
+            <cache/>
+        缓存只作用于 cache 标签所在的映射文件中的语句。
+        如果你混合使用 Java API 和 XML 映射文件，在共用接口中的语句将不会被默认缓存。
+        你需要使用 @CacheNamespaceRef 注解指定缓存作用域。
+
+        <cache
+            eviction="FIFO"
+            flushInterval="60000"
+            size="512"
+            readOnly="true"/>
+        创建了一个FIFO缓存 
+        每60s刷新一次 
+        最多存储结果对象或列表的512个引用
+        返回对象被认为只读
+        (对其修改会导致不同线程中的调用者产生冲突)
+
+        eviction清除策略:
+            LRU:  最近最少使用(移除最长时间不被使用的对象)
+            FIFO: 先进先出(按进入顺序移除)
+            SOFT: 软引用(基于垃圾回收器状态和软引用规则移除)
+            WEAK: 弱引用(更加积极的基于垃圾收集器状态和弱引用规则移除)
+        默认为LRU
+        
+        flushInterval刷新间隔:
+            单位ms 默认 unset (仅在语句调用时刷新)
+        
+        size引用数目:
+            默认1024
+
+        readOnly只读:
+            只读的缓存会给所有调用者返回缓存对象的相同实例。 
+                因此这些对象不能被修改。这就提供了可观的性能提升。
+            而可读写的缓存会（通过序列化）返回缓存对象的拷贝。 
+                速度上会慢一些，但是更安全，因此默认值是 false。
+ -->

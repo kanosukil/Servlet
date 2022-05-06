@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>兴趣收集</title>
+</head>
+<body>
+    <form action="gather-inf" method="post">
+        兴趣选择:[单选]
+        <label>
+            <input type="radio" name = "single" value="game" />
+        </label> 游戏
+        <label>
+            <input type="radio" name = "single" value="shop" />
+        </label> 购物
+        <label>
+            <input type="radio" name = "single" value="learn" />
+        </label> 学习
+        <label>
+            <input type="radio" name = "single" value="sport" />
+        </label> 运动
+        <label>
+            <input type="radio" name = "single" value="other" />
+        </label> 其他
+
+        <hr />
+        <hr />
+
+        兴趣选择:[多选]
+        <label>
+            <input type="checkbox" name = "multiple" value="game" />
+        </label> 游戏
+        <label>
+            <input type="checkbox" name = "multiple" value="shop" />
+        </label> 购物
+        <label>
+            <input type="checkbox" name = "multiple" value="learn" />
+        </label> 学习
+        <label>
+            <input type="checkbox" name = "multiple" value="sport" />
+        </label> 运动
+        <label>
+            <input type="checkbox" name = "multiple" value="other" />
+        </label> 其他
+
+        <hr/>
+        <hr/>
+
+        兴趣选项:[下拉框]
+        <label>
+            <select name="drop-down box" style="width: 150px;height: 20px;">
+                    <option value="game">游戏</option>
+                    <option value="shop">购物</option>
+                    <option value="learn">学习</option>
+                    <option value="sport">运动</option>
+                    <option value="other">其他</option>
+            </select>
+        </label>
+        <input type="submit" value="提交" />
+        <input type="reset" value="重选" />
+    </form>
+</body>
+</html>
