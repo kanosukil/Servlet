@@ -570,34 +570,34 @@ public class Servlet_Name extends HttpServlet { // 类名最好和注解中的 n
 
 3. 特定代码块内使用对应语言的注释语法
 
-+ EL 表达式的使用
+### EL 表达式的使用
 
-  + 结构: `${expression}`
++ 结构: `${expression}`
 
-  + EL提供"."和"[]"两种运算符存取数据
++ EL提供"."和"[]"两种运算符存取数据
 
-     1. 当要存取的属性名称中包含一些特殊字符就必须要使用"[]"
+   1. 当要存取的属性名称中包含一些特殊字符就必须要使用"[]"
 
-    2. 当要动态取值时就可以用"[]",而"."无法做到动态取值
+  2. 当要动态取值时就可以用"[]",而"."无法做到动态取值
 
-  + EL 存取 变量数据
++ EL 存取 变量数据
 
-    > e.g. `${username}` 去取**某一范围内**名称为 username 的变量值
-    >
-    > 在范围内找到了即返回其值(有多个, 则取第一个), 没有则返回 null
+  > e.g. `${username}` 去取**某一范围内**名称为 username 的变量值
+  >
+  > 在范围内找到了即返回其值(有多个, 则取第一个), 没有则返回 null
 
-  + 属性范围 在 EL 中的名称
++ 属性范围 在 EL 中的名称
 
-    | JSP 概念在 EL 中的名称    | 范围              |
-    | ------------------------- | ----------------- |
-    | page                      | pageScope         |
-    | request                   | requestScope      |
-    | session                   | sessionScope      |
-    | application = pageContext | applicaitoonScope |
+  | JSP 概念在 EL 中的名称 | 范围              |
+  | ---------------------- | ----------------- |
+  | page                   | pageScope         |
+  | request                | requestScope      |
+  | session                | sessionScope      |
+  | application            | applicaitoonScope |
 
-  + 常常使用 `${pageContext.request.contextPath}` 获取当前项目的 Classpath
++ 常常使用 `${pageContext.request.contextPath}` 获取当前项目的 Classpath
 
-    > `${pageContext.request.contextPath}` 等同于 `<%=request.getContextPath()%>` 获取部署的应用程序名
+  > `${pageContext.request.contextPath}` 等同于 `<%=request.getContextPath()%>` 获取部署的应用程序名
 
 
 ### Java 程序段
@@ -807,3 +807,623 @@ public class Servlet_Name extends HttpServlet { // 类名最好和注解中的 n
      + 配合 jsp:include | jsp:forward 使用
      + 结构: `<jsp:param name="参数名" value="参数值" />`
 
+### 表单元素的获得 <a id="form"></a>
+
++ 单一表单元素 (非数组)
+
+  > 送往服务器端时,仅为一个变量
+  >
+  > 包含:文本框 密码框 多行文本框 单选按钮 下拉菜单等
+
+  + 获取方法:
+
+    `request.getParameter("表单元素名name")`
+
+    > 返回值: String
+
++ 捆绑表单元素 (数组)
+
+  > 多个同名表单元素的值送往服务器时,是一个捆绑数组
+  >
+  > 包含:复选框 多选列表框 其他同名表单元素
+
+  + 获取方法:
+
+    `request.getParameterValues("表单元素名name")`
+
+    > 返回值: String[]
+
+### JSP 内置对象
+
+> 九大: out request response session application exception page pageContext config
+>
+> JSP 页面中直接通过以上列出的名称使用 (JSP 表达式中, EL 表达式中略有不同)
+
++ out
+
+  > 对应的 Java 类(接口): `javax.servlet.jsp.JspWriter`
+
+  + 向客户端输出各类数据类型的内容
+
+  + 对应用服务器上的输出缓冲区管理(缓冲区默认8KB)
+
+  + 常用方法:
+
+    > 输出
+    >
+    > 注: 服务端要输出到客户端的内容不是直接写到客户端,而是先写到一个输出缓存区中
+    >
+    > 将缓存区中的内容输出给客户端的条件:
+    >
+    > 1. JSP 页面已完成信息的输出
+    > 2. 输出缓存区已满
+    > 3. 在 JSP 调用 out.flush() | response.flushBuffer() 方法
+
+    + void print()
+    + void println()
+
+    > 管理
+
+    + int getBufferSize() // 获取缓存区大小
+
+    + int getRemaining() // 获取缓存区没被占用的空间大小
+
+    + void close() // 关闭输出流(强行终止当前页面的剩余部分向浏览器的输出, 即此命令以下的内容全部作废, 不会输出)
+
+      > 一般时数据输出完毕时使用
+
+    + void clearBuffer() // 清除当前缓存区的数据(**将数据写入到下一个输出语句, 并将在下一行开始输出**)(内容已经响应到了客户端也可使用)
+
+    + void flush() // 输出缓存区的数据
+
+    + void clear() // 清空缓存区数据(重置响应流: 响应流中的内容全部作废, 重新设置)[**若响应已经提交, 将出现 IOException 异常**]
+
++ request
+
+  > 对应 Java 类(接口): `javax.servlet.http.HttpServletRequest`
+
+  + 客户端请求的参数和流
+
+    > 客户端的数据来源:
+    >
+    > 1. 表单
+    > 2. 请求体参数
+
+  + request 对象封装了客户端的请求信息(客户请求信息 & 客户端的信息)
+
+    > 因此 request 封装的信息包括
+    >
+    > 1. 请求头信息 (包括了 客户请求信息 & 客户端信息)
+    > 2. 请求体信息
+
+  + 常用方法:
+
+    + String getMethod() // 获取请求方法 Get Post Put Delete ...
+    + String getRequestURI // 获取请求 URI 
+    + StringBuffer getRequestURL // 获取请求 URL (StringBuffer 的形式)
+    + String getProtocol() // 获得协议名
+    + String getServletPath() // 获得客户端请求的服务器资源路径
+    + String getQueryString() // 获取 URL 中的查询部分 (Post 请求无输出)
+    + String getServerName() // 获取服务器名称
+    + int getServerPort() // 获取服务器部署的端口号
+    + String getRemoteAddr() // 获取客户端 ip 
+    + String getParameter() // 获取请求的参数, 见<a href="#form">表单元素的获得</a>
+    + String[] getParameterValues() // 获取请求的参数数组, 见<a href="#form">表单元素的获得</a>
+
++ response
+
+  > 对应 Java 类(接口): `javax.servlet.http.HttpServletResponse`
+  >
+  > Cookie 小文本数据, 服务端生成, 客户端浏览器设置了接收 Cookie 将保存在本地文件中.
+  >
+  > + 下次使用本都存储了 Cookie 的网站, 将自动读取本地存储的 Cookie 并将数据发送到服务器端中
+  > + Cookie 内数据形式: Key-Value 键值对的形式
+
+  + 对客户端的响应
+
+  + 向客户端发送数据
+
+  + 常用方法: 
+
+    + void addHeader(String key, String value) // 添加响应头信息
+
+    + String encodeURL(String URL) // 以 response 内部设置的编码方式对 URL 进行编码, 返回 包括 SessionID 在内的 URL(?)
+
+    + 重定向: response.sendRedirect( JSP | HTML | Servlet ) // 向客户端返回重定向响应, 让客户端再一次向重定向的地址发送一次请求
+
+      > 和 request.getRequestDispatcher("URL").forward(request.response) 区分
+      >
+      > 1. 浏览器地址:
+      >        forward 属于服务器去请求去直接访问,因此客户端地址不变
+      >        redirect 是使浏览器去请求, 客户端浏览器地址会发生改变
+      > 2. 共享数据:
+      >        forward 转发的页面以及转发到的页面共享同一个 request 内的数据
+      >        redirect 不能共享 request 内的数据
+      > 3. 功能:
+      >        forward 只能在同一个服务器内转发请求
+      >        redirect 可以定向其他站点
+      > 4. 效率:
+      >        forward 只是服务器内跳转, 效率高
+      >        redirect 相对较低
+      >
+      > 附: 使用率低的重定向: sendError();
+      >
+      > 向客户端发送 HTTP 状态码出错信息, 例:
+      >
+      > 400 请求出现语法错误
+      >
+      > 401 请求用户的权限不够
+      >
+      > 403 资源不可用
+      >
+      > 404 未定位到资源
+      >
+      > 500 服务内部代码逻辑错误
+
++ session
+
+  > 通过 request 的 getSession() 方法获得
+  >
+  > 对应 Java 类(接口): `javax.servlet.http.HttpSession`
+
+  + 会话: 用户请求使用即新建一个会话, **长时间不请求服务器会话将自动销毁**.在会话中, 可以操作在服务器中在自己权限内的资源.
+
+  + 常用方法: 
+
+    + void setAttribute(String name, Object obj); // 设置一个属性
+
+      > 两次放入的 name 相等, 则后入覆盖前入
+
+    + Object getAttribute(String name); // 获得 Session 内的指定属性
+
+    + void removeAttribute(String name); // 移除指定属性
+
+    + void invalidate(); // 移除全部属性
+
+    + String getId(); // 获得 Session ID 
+
+      > 同一个用户在服务器中使用资源的 Session 都是同一个
+      >
+      > 使用 SessionId 标识.
+
++ applicaiton
+
+  > 对应 Java 类(接口): `javax.servlet.ServletContext`
+
+  + 保存应用程序的公用数据
+
+  + 服务器启动时即创建 Application , 服务器关闭才会销毁 Application.
+
+    > application 的生命周期: 整个 Web 应用运行时间, 或 服务器的开启到关闭
+
+  + 所有用户共享一个 Application
+
+    > 所有用户的不同时间的链接都可以对 application 中的同一个或不同属性进行操作.
+    >
+    > 任何地方的操作都会影响其他用户的访问.
+
+  + 常用方法:
+
+    + void setAttribute(String name, Object obj); // 设置一个属性
+    + Object getAttribute(String name); // 获得一个指定属性
+    + Enumeration\<String\> getAttributeByNames(); // 获得 application 中的所有参数名
+    + int getMajorVersion(); // 获得服务器支持的 Servlet 的主版本
+    + int getMinorVersion(); // 获得服务器支持的 Servlet 的从版本
+    + void removeAttribute(String name); // 移除一个指定属性
+
++ exception
+
+  > 对应 Java 类(接口): `java.lanb.Exception`
+
+  + 获得**没有被发现**或**不可避免**的异常信息
+
++ page
+
+  > java.lang.Object 类的实例
+
+  + 指向当前 JSP 页面本身的实例,使用其可调用 servlet 类中定义的方法,但只有在本页面内合法
+
+    > 类似于 Java 类中的 this
+
+  + JSP 中不常用
+
++ **pageContext**
+
+  + 提供对 JSP页面 **所有对象**及**命名空间**的访问
+
+    > 可以对**除自身以外的其他 8 个 JSP 对象** 以及 **绑定在 8 个 JSP 对象上的 Java 对象**进行访问
+
+  + 访问JSP页面上的**所有对象及其属性**
+
+  + example: ${pageContext.request.contextPath} 访问当前 Web 应用的 Classpath 目录
+
+  + 常用方法:
+
+    + void forward(String relativeUrlPath); // request 的 forward
+    + void include(java.lang.String s); // request 的 include
+    + JspWriter getOut(); // 获得 out 对象
+    + Exception getException(); // 获得 exception 对象
+    + ServletRequest getResquesr(); // 获得 requset 对象
+    + ServletResponse getResponse(); // 获得 response 对象
+    + Object getPage(); // 获得 page 对象
+    + HttpSession getSession(); // 获得 session 对象
+    + ServletConfig getServletConfig(); // 获得 config 对象
+    + ServletContext getServletContext(); // 获得 ServletContext / Application 对象
+    + Object getAttribute(String name); // 获得指定属性
+    + Object getAttribute(String name, int Scope); // 获得指定范围内的属性
+    + void setAttribute(Stirng name, Object attribute); // 设置属性
+    + void setAttribute(String name, Object obj, int scope); // 在指定范围内设置属性
+    + void removeAttribute(String name); // 移除属性
+    + void removeAttribute(String name, int scope);  // 移除指定范围内的属性
+    + void invalidate(); // 返回servletContext对象, 其余全部销毁
+
+    > Scope 范围:
+    >
+    > 1. page
+    > 2. request
+    > 3. session
+    > 4. application
+
++ config
+
+  > 对应 Java 类(接口): `javax.servlet.ServletConfig`
+
+  + JSP 页面初始化时所需要的参数以及服务器相关信息, 属性存在形式: Key - Value 键值对
+
+    >  通过传递 ServletContext 对象实现
+
+  + 使用少
+
+  + 常用方法:
+
+    > 可以通过其他对象实现
+
+    + ServletContext getServletContext();
+
+      > 可以通过 request 对象获得
+
+    + String getServletName();
+
+      > 可以通过 request 对象获得
+
+    + String getInitParameter(String name);
+
+      > 可以通过 application 对象获得
+
+    + Enumeration\<String\> getInitParameterNames(); 
+
+      > 可以通过 application 对象获得
+
+### JSP 页面框架
+
+```jsp
+<%@ page import="" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib uri="URIToTagLibrary" prefix="tagePrefix" %>
+<%! JSP 声明 %>
+<!--HTML 页面框架-->
+<!--期间穿插 Java代码段, EL表达式, JSP表达式 ...-->
+```
+
+## Exception 处理
+
++ 后端**捕获所有 exception** 交由 **service**, **service** 交由 **controller** 返回给**前端控制器**, 而**前端控制器**应抛出给**全局的异常处理器**统一处理
+
++ 全局异常处理器:
+  + 自定义异常: 直接取出反馈在错误页面上
+  + 非自定义异常: 构建一个自定义的异常, 返回消息为 "未知错误", 在反馈显示页面
++ Exception 处理
+  1. 捕获所有异常
+  2. 自定义异常类, 用于反馈系统异常
+  3. 反馈异常页面
+
+## JDBC 简单使用
+
++ JDBC 功能
+
+  1. 建立与数据库或其他数据源的链接
+  2. 向数据库发送SQL语句
+  3. 处理数据库返回结果
+
++ JDBC 驱动程序类型:
+
+  1. JDBC-ODBC桥驱动程序
+  2. 部分本地API部分Java的驱动程序
+  3. JDBC网络纯Java驱动程序
+  4. 本地协议的纯Java驱动程序
+
++ JDBC 对象
+
+  + java.sql.Connection: 数据库链接对象
+  + java.sql.Statement: SQL 语句执行对象
+  + java.sql.ResultSet: SQL 语句结果存放对象
+
++ 基本操作
+
+  1. 根据驱动获得连接对象
+
+     > 常用驱动: 
+     >
+     > + MySQL:
+     >   + com.mysql.jdbc.Driver (jdbc:mysql://IP:port/DataBaseName [default port:3306])
+     >   + 
+
+  2. 获得语句执行对象
+
+  3. 执行语句
+
+  4. 获得语句执行结果对象
+
+  5. 关闭链接
+
+  ```java
+  Class.forName("指定驱动名"); // 注册驱动
+  Connection con = DriveManager.getConnection("协议URL", "用户名", "密码");
+  Statement stm = con.createStatement(); // 获取Statement接口实例
+  stm.executeQuery("SQL查询语句");   // SQL查询
+  stm.executeUpdate("SQL增删改语句");// SQL增加 删除 修改语句
+  // con.commit(); catch (SQLException se) con.rollback();
+  // 对数据库的操作完成需要提交更改(con.commit())
+  // 不提交修改(con.rollback())
+  // 对获取数据进行处理(略)
+  
+  // 关闭数据库
+  stm.close();
+  con.close();
+  ```
+
++ SQL 语句执行对象
+
+  > String sql = "对应操作的 SQL 语句";
+  >
+  > int i = stm.executeUpdate(sql); // 插入 删除 修改
+
+  + 插入:
+
+    + i 语句执行后插入的行数
+
+  + 删除:
+
+    + i 语句执行后删除的行数
+
+  + 修改:
+
+    + i 语句执行后修改的行数
+
+  + 查询:
+
+    ```java
+    String sql_find;
+    ResultSet rs = stm.executeQuery(sql_find);
+    // 查找返回的数据需要存放在 RequestSet 对象中,然后从rs对象中取出数据进行处理
+    // RequestSet 中存在小指针(游标)初始指向第一行的前一行,rs.next()可以使游标下移一行(返回boolean值)
+    
+    while(rs.next()) { // rs.next() 直接换下一行 (将rs认为是表,rs中的数据和数据库中的数据存在形式一致
+        xxx var = rs.getXXX("列名"); // xxx为对应XXX的数据类型, XXX为列名对应的数据类型
+        /*
+        	rs 的 wasNull() 方法, 判断最后一个 getter 方法的值是否为 SQL NULL, 为空返回 true, 不为空返回 false
+        	XXX: 
+        	String getString(int column);  
+        	boolean getBoolean(int column);
+        	byte getByte(int column);
+        	short getShort(int column);
+        	int getInt(int column);
+        	long getLong(int column);
+        	float getFloat(int column);
+        	double getDouble(int column);
+        	BigDecimal getBigDecimal(int column, int scale);
+        	byte[] getBytes(int columnIndex);
+        	java.sql.Date getDate(int columnIndex);
+        	java.sql.Time getTime(int columnIndex);
+        	java.sql.Timestamp getTimestamp(int columnIndex);
+        	!!: int column(第几列的数据, 列的顺序) 可重写为 String column(哪列的数据, 列名)
+         */
+        // 抛出的异常类型都为 SQLException
+    }
+    ```
+
+  + **注**:  批量操作的方法之一
+
+    ```java
+    Statement stmt = con.createStatement();
+    PreparedStatement pstmt = con.prepareStatement("INSERT INTO MyPlayers values (?, ?, ?, ?, ?, ? )");
+    pstmt.setInt(1, 8);
+    pstmt.setString(2, "Ryan");
+    pstmt.setString(3, "McLaren");
+    pstmt.setDate(4, new Date(413596800000L));
+    pstmt.setString(5, "Kumberly");
+    pstmt.setNull(6, java.sql.Types.VARCHAR);
+    pstmt.executeUpdate();
+    ```
+
++ JDBC 事务
+
+  + JDBC 默认使用
+
+    > 即 必须使用 con.commit() 方法才将操作应用到数据库中
+
+  + 事务由一条或多条SQL语句组成,一旦其中一条语句失败,整个事务都将失败.
+
+  + 主要控制语句:
+
+    + con.commit();    // 更改是否作用于数据库
+    + con.rollback();   // commit失败即回滚(放弃更改,返回上一次正确状态)
+
+  + 由于事务语句中只要出现一次异常就将导致整个事务的失败, 因此可以使用 try-catch 代码块控制
+
+    ```java
+    try {
+        Connection con = DriveManager.getConnection("URL", "userName", "password");
+        Statement stm = con.createStatement();
+        String sql_crud = "SQL Statement";
+        int i = stm.executeUpdate(sql_crud);
+        con.commit();
+    } catch (SQLException se) {
+        con.rollback();
+    }
+    ```
+
+  + 保存点
+
+    + 设置保存点,方便回滚.遇到错误,返回保存点,仅保存保存点之前的操作.
+
+      ```java
+      Savepoint sp1 = con.setSavepoint("name");   // 创建保存点
+      con.rollback(sp1);                          // 回滚到保存点
+      releaseSavepoint(sp1);                      // 删除保存点(对象通常为setSavepoint()生成的保存点)
+      ```
+
+## AJAX
+
+> 异步 JavaScript & XML
+
++ 创建快速动态网页(通过在后台与服务器进行少量数据交换,使网页实验异步更新)
+
+  > 不重新加载网页的情况下,对网页的某部分进行更新
+
++ Ajax开发模式采用异步概念. 客户端和服务器端不必再相互等待,而是并发进行.
+
++ 特点:
+
+  + 页面只需要部分刷新
+  + 页面不会重新加载, 只做必要的数据更新
+
++ Ajax 由五种技术组成:
+
+  1. **异步数据获取技术 XMLHttpRequest (核心)**
+
+     + 用于幕后服务器交换数据
+
+       > 更新网页的部分, 不必要更新整个网页
+
+     ```javascript
+     variable = new XMLHttpRequest();
+     variable = new ActiveXObject("Microsoft.XMLHTTP");
+     ```
+
+     > 老版本的IE5 IE6 使用 ActiveX对象
+
+     + 属性
+
+       1. onreadyStatechange // readyState属性变化时调用的函数
+
+       2. readyState // 保存XMLHttpRequest状态
+
+          > 0 请求未初始化
+          > 1 服务器连接已建立
+          > 2 请求已收到
+          > 3 正在处理请求
+          > 4 请求已完成且响应已就绪
+
+       3. responseText // 以字符串的形式返回的响应数据
+
+       4. responseXML // 以XML的形式返回的响应数据
+
+       5. status // 返回请求状态号
+
+          > 200 "OK"
+          > 403 "Forbidden"
+          > 404 "Not Found"
+
+       6. statusText // 返回状态文本 (例: "OK" "Not Found")
+
+     + 常用方法
+
+       + new XMLHttpRequest() // 创建一个新的XMLHttpRequest对象
+
+       + abort() // 取消当前响应
+
+       + getAllResponseHeaders() // 获得HTTP响应头部作为未解析的字符串
+
+       + getResponseHeader() // 获得指定HTTP响应头部的值
+
+       + **open(method, url, async) // 初始化HTTP请求参数**
+
+         > method : GET POST HEAD
+         >
+         > url : 服务器内部资源路径
+         >
+         > async : true 异步请求; false 同步请求
+
+       + **send() // 将GET请求发送到服务器**
+
+       + **send(String) // 将POST请求发送到服务器**
+
+       + setRequestHeader() // 向请求头中添加参数
+
+     + 发送请求
+
+       ```javascript
+       // GET 请求
+       xmlHttp.open("GET", "getBook.jsp?id=" + categoryID, true);
+       xmlHttp.send();
+       // 显式请求参数 ?id= 或者时 /{id}
+       
+       // POST 请求
+       xhttp.open("POST", "getBook.jsp", true);
+       xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+       // application/x-www-form-urlencoded 表单字符类型
+       // multiline/form-data 表单类型
+       // application/json json数据类型
+       // text/xml xml数据类型
+       xhttp.send("请求参数字符串");
+       // e.g. xhttp.send("stuName=" + stuName.value + "&score=" + score.value);
+       // 没有添加HTTP头部, 将无法获得send()的内容
+       ```
+
+       > GET 方式 快并简单于 POST 方式 (适用于大多数情况)
+       >
+       > 但, 以下场景必须使用 POST 方式:
+       >
+       > 1. 上传数据
+       > 2. 发送大量数据
+       > 3. 发送用户的输入(可能有非英文字符, POST 请求可以设置请求头的字符编码)
+
+  2. 基于标准的表示技术 XHTML 和 CSS
+
+  3. 动态显示和交互技术 Document Object Model (文档对象模型)
+
+  4. 数据互换和操作技术 XML 和 XSLT
+
+  5. JavaScript 融合以上4种技术
+
++ Ajax 开发
+
+  1. 创建 XMLHttpRequest 对象
+
+     > 建议放在一个 js 文件中, 在 body 标签内使用 onload 属性.
+     >
+     > 即**此页面被加载时**就创建 XMLHttpRequest 对象
+
+     ```javascript
+     if (window.XMLHttpRequest) {
+         xmlhttp = new XMLHttpRequest();
+         // IE7+ Firefox Chrome Opera Safari 等浏览器
+     }
+     else {
+         xmlhttp = new ActiveXObject("Microsoft.XMLHTTP")
+         // IE6 IE5 浏览器
+     }
+     ```
+
+  2. 定义响应事件处理函数
+
+     > 即 获得响应后, 该如何处理响应的数据
+
+     ```javascript
+     // onreadystatechange 事件为响应处理事件, 可把所有处理代码放入该事件对应函数中
+     xmlhttp.onreadystatechange=function() {
+         if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+             document.getElementById("myDiv").innerHTML = xmlhttp.responseText;
+         }
+     }
+     ```
+
+  3. 发送 HTTP 请求
+
+     ```javascript
+     xmlhttp.open("GET", "servlet/PhotoServlet?index=" + index, true);
+     xmlhttp.send(null);
+     ```
+
+     
